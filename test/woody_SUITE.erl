@@ -96,12 +96,12 @@ test_sets(_Config) ->
     Tree = woody:new(),
     Update = #{1 => {'S_ADD', <<"1">>}},
     Tree1 = woody:update(Update, Tree),
-    Tree2 = woody:update(Update, Tree1),
+    Tree1 = woody:update(Update, Tree1),
 
     Query1 = 'GET',
     ExpectedData1 = #{1 => [<<"1">>]},
     ExpectedData1 = woody:encode(
-                      woody:query(Query1, Tree2)),
+                      woody:query(Query1, Tree1)),
 
     Update2 = #{1 => {'S_UNION', [<<"1">>]}},
     Tree3 = woody:update(Update2, Tree),
@@ -121,7 +121,14 @@ test_sets(_Config) ->
     Tree = woody:update(Update5, Tree4),
     Tree = woody:update(Update5, Tree),
     Tree = woody:update(Update4, Tree),
-    Tree2 = woody:update(Update6, Tree4),
+    Tree1 = woody:update(Update6, Tree4),
+
+    Update7 = #{1 => {'S_UPDATE', [<<"2">>], [<<"1">>]}},
+    Tree7 = woody:update(Update7, Tree1),
+
+    ExpectedData7 = #{1 => [<<"2">>]},
+    ExpectedData7 = woody:encode(
+                      woody:query(Query1, Tree7)),
     ok.
 
 test_zsets(_Config) ->
