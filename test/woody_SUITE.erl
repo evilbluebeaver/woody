@@ -312,4 +312,14 @@ test_trie(_Config) ->
     Expected10 = #{"prefix2" => #{1 => <<"12">>}},
     Expected10 = woody:encode(woody:query(Query10, Tree8)),
 
+    Update11 = #{1 => #{"prefix" => {'T_PREFIX', {'SET', <<"1">>}}}},
+    Tree11 = woody:update(Update11, Tree),
+    Expected11 = #{1 => #{"prefix" => <<"1">>}},
+    Expected11 = woody:encode(woody:query(GetQuery, Tree11)),
+
+    Query12 = #{1 => {'T_SIMILAR', "prefix", 'GET'}},
+    Expected11 = woody:encode(woody:query(Query12, Tree11)),
+
+
+
     ok.
