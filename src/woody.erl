@@ -1,22 +1,29 @@
 -module(woody).
 
 -export([new/0,
+         is_woody/1,
          query/2,
          encode/1,
          update/2]).
 
--record(woody_tree, {content}).
--record(woody_result, {content}).
--record(woody_set, {content}).
--record(woody_zset, {content}).
--record(woody_trie, {content}).
--record(woody_zset_result, {content, scores}).
+-record(woody_tree,         {content}).
+-record(woody_result,       {content}).
+-record(woody_set,          {content}).
+-record(woody_zset,         {content}).
+-record(woody_trie,         {content}).
+-record(woody_zset_result,  {content, scores}).
 
 encode(#woody_result{content=Content}) ->
     encode_value(Content).
 
 new() ->
     #woody_tree{}.
+
+is_woody(#woody_tree{}) ->
+    true;
+
+is_woody(_) ->
+    false.
 
 query(Query, #woody_tree{content=Content}) ->
     case process_query(Query, Content) of
