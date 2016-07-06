@@ -138,7 +138,13 @@ process_query({'T_SIMILAR', Prefix, Query}, #woody_trie{content=Trie}) ->
     Fun = fun(K, V, Acc) ->
                   maps:put(K, process_query(Query, V), Acc)
           end,
-    trie:fold_similar(Prefix, Fun, #{}, Trie);
+    Result = trie:fold_similar(Prefix, Fun, #{}, Trie),
+    case maps:size(Result) of
+        0 ->
+            undefined;
+        _ ->
+            Result
+    end;
 
 process_query({'GET', 'WITHSCORES'}, undefined) ->
     undefined;

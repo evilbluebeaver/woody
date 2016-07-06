@@ -333,6 +333,10 @@ test_trie(_Config) ->
 
     Query11 = {'T_SIMILAR', "prefix2", 'GET'},
     undefined = woody:encode(woody:query(Query11, Tree)),
+
+    Query12 = {'T_SIMILAR', "qwe", 'GET'},
+    undefined = woody:encode(woody:query(Query12, Tree8)),
+
     ok.
 
 test_is_woody(_Config) ->
