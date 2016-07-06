@@ -116,41 +116,74 @@ process_query(Query, Content) when is_map(Query) ->
              (Key, Command, Result) ->
                   process_query_key(Key, Command, Content, Result)
           end,
-    maps:fold(Fun, #{}, Query);
+    R = maps:fold(Fun, #{}, Query),
+    case R of
+        {error, _}=Error->
+            Error;
+        R ->
+            case maps:size(R) of
+                0 ->
+                    undefined;
+                _ ->
+                    R
+            end
+    end;
 
 process_query('GET', Value) ->
     Value;
 
+process_query({'T_SIMILAR', _Prefix, _Query}, undefined) ->
+    undefined;
 process_query({'T_SIMILAR', Prefix, Query}, #woody_trie{content=Trie}) ->
     Fun = fun(K, V, Acc) ->
                   maps:put(K, process_query(Query, V), Acc)
           end,
     trie:fold_similar(Prefix, Fun, #{}, Trie);
 
+process_query({'GET', 'WITHSCORES'}, undefined) ->
+    undefined;
 process_query({'GET', 'WITHSCORES'}, #woody_zset{content=ZSet}) ->
     #woody_zset_result{content=zset:to_list(ZSet), scores=true};
 
+process_query({'S_INTERSECTION', L}, undefined) when is_list(L) ->
+    undefined;
 process_query({'S_INTERSECTION', L}, #woody_set{content=Set}) when is_list(L) ->
     #woody_set{content=sets:intersection(Set, sets:from_list(L))};
 
-process_query({'Z_TOP', N}, #woody_zset{content=ZSet}) ->
+process_query({'Z_TOP', N}, undefined) when is_integer(N)->
+    undefined;
+process_query({'Z_TOP', N, 'WITHSCORES'}, undefined) when is_integer(N) ->
+    undefined;
+process_query({'Z_TOP', N}, #woody_zset{content=ZSet}) when is_integer(N) ->
     #woody_zset_result{content=zset:top(N, ZSet), scores=false};
-process_query({'Z_TOP', N, 'WITHSCORES'}, #woody_zset{content=ZSet}) ->
+process_query({'Z_TOP', N, 'WITHSCORES'}, #woody_zset{content=ZSet}) when is_integer(N) ->
     #woody_zset_result{content=zset:top(N, ZSet), scores=true};
 
-process_query({'Z_TOP', N, 'FROMSCORE', Score}, #woody_zset{content=ZSet}) ->
+process_query({'Z_TOP', N, 'FROMSCORE', Score}, undefined) when is_integer(N), is_integer(Score) ->
+    undefined;
+process_query({'Z_TOP', N, 'FROMSCORE', Score, 'WITHSCORES'}, undefined) when is_integer(N), is_integer(Score)->
+    undefined;
+process_query({'Z_TOP', N, 'FROMSCORE', Score}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(Score) ->
     #woody_zset_result{content=zset:top(N, Score, ZSet), scores=false};
-process_query({'Z_TOP', N, 'FROMSCORE', Score, 'WITHSCORES'}, #woody_zset{content=ZSet}) ->
+process_query({'Z_TOP', N, 'FROMSCORE', Score, 'WITHSCORES'}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(Score)->
     #woody_zset_result{content=zset:top(N, Score, ZSet), scores=true};
 
-process_query({'Z_RANGE', N, M}, #woody_zset{content=ZSet}) ->
+process_query({'Z_RANGE', N, M}, undefined) when is_integer(N), is_integer(M) ->
+    undefined;
+process_query({'Z_RANGE', N, M, 'WITHSCORES'}, undefined) when is_integer(N), is_integer(M) ->
+    undefined;
+process_query({'Z_RANGE', N, M}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(M) ->
     #woody_zset_result{content=zset:range(N, M, ZSet), scores=false};
-process_query({'Z_RANGE', N, M, 'WITHSCORES'}, #woody_zset{content=ZSet}) ->
+process_query({'Z_RANGE', N, M, 'WITHSCORES'}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(M) ->
     #woody_zset_result{content=zset:range(N, M, ZSet), scores=true};
 
-process_query({'Z_PAGE', N, 'FROMKEY', K}, #woody_zset{content=ZSet}) ->
+process_query({'Z_PAGE', N, 'FROMKEY', _K}, undefined) when is_integer(N) ->
+    undefined;
+process_query({'Z_PAGE', N, 'FROMKEY', _K, 'WITHSCORES'}, undefined) when is_integer(N) ->
+    undefined;
+process_query({'Z_PAGE', N, 'FROMKEY', K}, #woody_zset{content=ZSet}) when is_integer(N) ->
     #woody_zset_result{content=zset:page(K, N, ZSet), scores=false};
-process_query({'Z_PAGE', N, 'FROMKEY', K, 'WITHSCORES'}, #woody_zset{content=ZSet}) ->
+process_query({'Z_PAGE', N, 'FROMKEY', K, 'WITHSCORES'}, #woody_zset{content=ZSet}) when is_integer(N) ->
     #woody_zset_result{content=zset:page(K, N, ZSet), scores=true};
 
 process_query(_, _) ->
