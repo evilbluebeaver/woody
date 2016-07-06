@@ -12,7 +12,8 @@
          test_sets/1,
          test_zsets/1,
          test_where/1,
-         test_trie/1
+         test_trie/1,
+         test_is_woody/1
         ]).
 
 all() -> [test_set,
@@ -24,7 +25,8 @@ all() -> [test_set,
           test_sets,
           test_zsets,
           test_where,
-          test_trie
+          test_trie,
+          test_is_woody
          ].
 
 test_set(_Config) ->
@@ -122,6 +124,12 @@ test_sets(_Config) ->
     Tree = woody:update(Update5, Tree),
     Tree = woody:update(Update4, Tree),
     Tree2 = woody:update(Update6, Tree4),
+
+    undefined = woody:encode(woody:query(Query3, Tree)),
+
+    Query4 = {'S_INTERSECTION', [<<"1">>, <<"2">>]},
+    undefined = woody:encode(woody:query(Query4, Tree)),
+
     ok.
 
 test_zsets(_Config) ->
@@ -139,18 +147,26 @@ test_zsets(_Config) ->
     ExpectedData2 = #{1 => {<<"1">>, 'WITHSCORE', 10}},
     ExpectedData2 = woody:encode(
                       woody:query(Query2, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query2, Tree)),
 
     Query3 = {'Z_TOP', 5, 'FROMSCORE', 10, 'WITHSCORES'},
     ExpectedData2 = woody:encode(
                       woody:query(Query3, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query3, Tree)),
 
     Query4 = {'Z_RANGE', 5, 10, 'WITHSCORES'},
     ExpectedData2 = woody:encode(
                       woody:query(Query4, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query4, Tree)),
 
     Query5 = {'Z_PAGE', 5, 'FROMKEY', 1, 'WITHSCORES'},
     ExpectedData2 = woody:encode(
                       woody:query(Query5, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query5, Tree)),
 
     Query6 = 'GET',
     ExpectedData1 = woody:encode(
@@ -162,24 +178,35 @@ test_zsets(_Config) ->
     Query8 = {'Z_TOP', 5},
     ExpectedData1 = woody:encode(
                       woody:query(Query8, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query8, Tree)),
 
     Query9 = {'Z_TOP', 5, 'FROMSCORE', 10},
     ExpectedData1 = woody:encode(
                       woody:query(Query9, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query9, Tree)),
 
     Query10 = {'Z_RANGE', 5, 10},
     ExpectedData1 = woody:encode(
                       woody:query(Query10, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query10, Tree)),
 
     Query11 = {'Z_PAGE', 5, 'FROMKEY', 1},
     ExpectedData1 = woody:encode(
                       woody:query(Query11, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query11, Tree)),
+
     Update12 = #{2 => {'Z_SETSCORE', 10, 'UNSET'}},
     Tree1 = woody:update(Update12, Tree1),
 
     Query13 =  {'GET', 'WITHSCORES'},
     ExpectedData2 = woody:encode(
                       woody:query(Query13, Tree1)),
+    undefined = woody:encode(
+                  woody:query(Query13, Tree)),
     ok.
 
 test_where(_Config) ->
@@ -287,11 +314,10 @@ test_trie(_Config) ->
     Expected6 = woody:encode(woody:query(Query6, Tree3)),
 
     Query7 = #{"unknown_prefix" => 'GET'},
-    Expected7 = #{},
-    Expected7 = woody:encode(woody:query(Query7, Tree3)),
+    undefined = woody:encode(woody:query(Query7, Tree3)),
 
     Update8 = #{"prefix" => {'T_PREFIX', #{1 => {'SET', <<"11">>},
-                                            2 => {'SET', <<"21">>}}},
+                                           2 => {'SET', <<"21">>}}},
                 "prefix2" => {'T_PREFIX', #{1 => {'SET', <<"12">>},
                                             2 => {'SET', <<"22">>}}}},
     Tree8 = woody:update(Update8, Tree),
@@ -305,4 +331,13 @@ test_trie(_Config) ->
     Expected10 = #{"prefix2" => #{1 => <<"12">>}},
     Expected10 = woody:encode(woody:query(Query10, Tree8)),
 
+    Query11 = {'T_SIMILAR', "prefix2", 'GET'},
+    undefined = woody:encode(woody:query(Query11, Tree)),
     ok.
+
+test_is_woody(_Config) ->
+    Tree = woody:new(),
+    true = woody:is_woody(Tree),
+    false = woody:is_woody(1),
+    ok.
+
