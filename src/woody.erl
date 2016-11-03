@@ -30,7 +30,7 @@ query(Query, #woody_tree{content=Content}) ->
         {error, _}=Error ->
             Error;
         R ->
-            #woody_result{content=R}
+            {ok, #woody_result{content=R}}
     end.
 
 update(Update, #woody_tree{content=Content}) ->
@@ -38,7 +38,7 @@ update(Update, #woody_tree{content=Content}) ->
         {error, _}=Error ->
             Error;
         C ->
-            #woody_tree{content=C}
+            {ok, #woody_tree{content=C}}
     end.
 
 encode_value({dict, Dict}) ->
@@ -108,7 +108,10 @@ process_query_key(Key, Query, {dict, Content}, Result) ->
                 {ok, V} ->
                     V
             end,
-    try_process_query(Key, Query, Value, Result).
+    try_process_query(Key, Query, Value, Result);
+
+process_query_key(_Key, _Query, _, _Result) ->
+    {error, unknown_query}.
 
 process_query(Query, Content) when is_map(Query) ->
     Fun = fun(_Key, _Command, Error={error, _}) ->
