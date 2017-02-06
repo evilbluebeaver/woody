@@ -1,8 +1,0 @@
-[{<<"trie">>,
-  {git,"git://github.com/okeuday/trie.git",
-       {ref,"36595262967c26c03701b961bb53e7d4805a5415"}},
-  0},
- {<<"zset">>,
-  {git,"git://github.com/evilbluebeaver/zset.git",
-       {ref,"f4fa9fad8636dbd01a85ef3e46f969409dd36c23"}},
-  0}].
