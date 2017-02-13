@@ -330,12 +330,22 @@ process_update({'S_REMOVE', _Remove}, undefined) ->
 process_update({'S_SUBTRACT', Subtract}, undefined) when is_list(Subtract) ->
     undefined;
 process_update({'S_SUBTRACT', Subtract}, #woody_set{content=Set}) when is_list(Subtract) ->
-    Set1 = case Subtract of
-               [One] ->
-                   sets:del_element(One, Set);
-               _ ->
-                   sets:subtract(Set, sets:from_list(Subtract))
-           end,
+    SubtractSet = sets:from_list(Subtract),
+    Set1 = sets:subtract(Set, SubtractSet),
+    case sets:size(Set1) of
+        0 ->
+            undefined;
+        _ ->
+            #woody_set{content=Set1}
+    end;
+
+process_update({'S_UPDATE', Union, _Subtract}, undefined) ->
+    #woody_set{content=sets:from_list(Union)};
+
+process_update({'S_UPDATE', Union, Subtract}, #woody_set{content=Set}) ->
+    UnionSet = sets:from_list(Union),
+    SubtractSet = sets:from_list(Subtract),
+    Set1 = sets:subtract(sets:union(Set, UnionSet), SubtractSet),
     case sets:size(Set1) of
         0 ->
             undefined;
