@@ -130,6 +130,13 @@ test_sets(_Config) ->
     {ok, Tree} = woody:update(Update4, Tree),
     {ok, Tree2} = woody:update(Update6, Tree4),
 
+    Update7 = #{1 => {'S_UPDATE', [<<"1">>], [<<"2">>]}},
+    {ok, Tree2} = woody:update(Update7, Tree),
+    {ok, Tree2} = woody:update(Update7, Tree1),
+
+    Update8 = #{1 => {'S_UPDATE', [], [<<"1">>]}},
+    {ok, Tree} = woody:update(Update8, Tree1),
+
     {ok, RawUndefined} = woody:query(Query3, Tree),
     undefined = woody:encode(RawUndefined),
 
