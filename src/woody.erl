@@ -70,7 +70,7 @@ encode_value(#woody_zset_result{content=ZSetResult, scores=Scores}) ->
 
 encode_value(#woody_trie{content=Trie}) ->
     Fun = fun(P, V, A) ->
-                  maps:put(list_to_binary(P), V, A)
+                  maps:put(list_to_binary(P), encode_value(V), A)
           end,
     trie:fold(Fun, #{}, Trie);
 

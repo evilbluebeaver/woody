@@ -13,6 +13,7 @@
          test_zsets/1,
          test_where/1,
          test_trie/1,
+         test_complex/1,
          test_is_woody/1
         ]).
 
@@ -26,6 +27,7 @@ all() -> [test_set,
           test_zsets,
           test_where,
           test_trie,
+          test_complex,
           test_is_woody
          ].
 
@@ -359,6 +361,20 @@ test_trie(_Config) ->
     undefined = woody:encode(RawData12),
 
     ok.
+
+test_complex(_Config) ->
+    Tree = woody:new(),
+    Update1 = #{<<"guild_search">> => #{<<"guild_name_1">> => {'T_PREFIX', {'WHERE', 'UNDEF', #{<<"guild_id_1">> => {'SET', <<"value">>}}}}}},
+    {ok, Tree1} = woody:update(Update1, Tree),
+    Query1 = 'GET',
+    {ok, RawData1} = woody:query(Query1, Tree1),
+    Expected1 = #{<<"guild_search">> => #{<<"guild_name_1">> => #{<<"guild_id_1">> => <<"value">>}}},
+    Expected1 = woody:encode(RawData1),
+
+    Update2 = #{<<"guild_search">> => #{<<"guild_name_1">> => {'T_PREFIX', {'WHERE', 'UNDEF', #{<<"guild_id_2">> => {'SET', <<"value">>}}}}}},
+    {error, predicate_failed} = woody:update(Update2, Tree1),
+    ok.
+
 
 test_is_woody(_Config) ->
     Tree = woody:new(),
