@@ -269,6 +269,18 @@ test_where(_Config) ->
     Update12 = #{1 => {'WHERE', {'NOT', 'UNDEF'}}},
     {ok, Tree1} = woody:update(Update12, Tree1),
 
+    Update13 = #{2 => {'WHERE', {'GT', 5}}},
+    {error, predicate_failed} = woody:update(Update13, Tree1),
+
+    Update14 = #{2 => {'WHERE', {'GTE', 10}}},
+    {error, predicate_failed} = woody:update(Update14, Tree1),
+
+    Update15 = #{2 => {'WHERE', {'LT', 15}}},
+    {ok, Tree1} = woody:update(Update15, Tree1),
+
+    Update16 = #{2 => {'WHERE', {'LTE', 10}}},
+    {ok, Tree1} = woody:update(Update16, Tree1),
+
     SetsUpdate = #{1 => {'S_UNION', [1,2,3]}},
     {ok, SetsTree} = woody:update(SetsUpdate, Tree),
 
