@@ -377,16 +377,26 @@ process_predicate({'EQ', V1}, V2) ->
 process_predicate({'NE', V1}, V2) ->
     V2 /= V1;
 
-process_predicate({'GT', V1}, V2) ->
+process_predicate({'GT', V1}, undefined) when is_number(V1) ->
+    process_predicate({'GT', V1}, 0);
+
+process_predicate({'GT', V1}, V2) when is_number(V1), is_number(V2) ->
     V2 > V1;
 
-process_predicate({'GTE', V1}, V2) ->
+process_predicate({'GTE', V1}, undefined) when is_number(V1) ->
+    process_predicate({'GTE', V1}, 0);
+
+process_predicate({'GTE', V1}, V2) when is_number(V1), is_number(V2) ->
     V2 >= V1;
 
-process_predicate({'LT', V1}, V2) ->
+process_predicate({'LT', V1}, undefined) when is_number(V1) ->
+    process_predicate({'LT', V1}, 0);
+process_predicate({'LT', V1}, V2) when is_number(V1), is_number(V2) ->
     V2 < V1;
 
-process_predicate({'LTE', V1}, V2) ->
+process_predicate({'LTE', V1}, undefined) when is_number(V1) ->
+    process_predicate({'LTE', V1}, 0);
+process_predicate({'LTE', V1}, V2) when is_number(V1), is_number(V2) ->
     V2 =< V1;
 
 process_predicate({'NOT', P}, V) ->
