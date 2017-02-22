@@ -305,10 +305,6 @@ process_update({'INC', Inc}, Value) when is_integer(Inc),
 process_update({'INC', Inc}, undefined) when is_integer(Inc) ->
     Inc;
 
-process_update({'S_UPDATE', Add, Remove}, #woody_set{content=Set}) when is_list(Add), is_list(Remove) ->
-    #woody_set{content=sets:subtract(sets:union(Set, sets:from_list(Add)),
-                                     sets:from_list(Remove))};
-
 process_update({'S_UNION', Union}, #woody_set{content=Set}) when is_list(Union) ->
     #woody_set{content=sets:union(Set, sets:from_list(Union))};
 
