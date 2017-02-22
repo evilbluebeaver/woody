@@ -152,6 +152,8 @@ test_zsets(_Config) ->
     Update1 = #{1 => {'Z_SETSCORE', 10, {'SET', <<"1">>}}},
     {ok, Tree1} = woody:update(Update1, Tree),
     {ok, Tree1} = woody:update(Update1, Tree1),
+    Update2 = #{1 => {'Z_SETSCORE', 10}},
+    {ok, Tree1} = woody:update(Update2, Tree1),
 
     Query1 = #{1 => 'GET', 2 => 'GET'},
     ExpectedData1 = #{1 => <<"1">>},

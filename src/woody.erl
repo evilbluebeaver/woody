@@ -230,6 +230,9 @@ process_update_key(Prefix, {'T_PREFIX', Update}, #woody_trie{content=Trie}) when
             #woody_trie{content=trie:store(StringPrefix, V, Trie)}
     end;
 
+process_update_key(Key, {'Z_SETSCORE', Score}, Value) when is_integer(Score) ->
+    process_update_key(Key, {'Z_SETSCORE', Score, 'STUB'}, Value);
+
 process_update_key(Key, Update={'Z_SETSCORE', Score, _}, undefined) when is_integer(Score) ->
     process_update_key(Key, Update, #woody_zset{content=zset:new()});
 
@@ -364,6 +367,9 @@ process_update({'WHERE', Predicate, Operation}, Value) ->
         false ->
             {error, predicate_failed}
     end;
+
+process_update('STUB', Value) ->
+    Value;
 
 process_update(_, _) ->
     {error, unknown_update}.
