@@ -1,6 +1,6 @@
 {application, woody,
  [{description, "An OTP library"},
-  {vsn, "0.1.12"},
+  {vsn, "0.1.13"},
   {registered, []},
   {applications,
    [kernel,

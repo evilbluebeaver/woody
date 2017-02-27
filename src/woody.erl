@@ -180,9 +180,9 @@ process_query({'Z_TOP', N, 'FROMSCORE', Score}, undefined) when is_integer(N), i
 process_query({'Z_TOP', N, 'FROMSCORE', Score, 'WITHSCORES'}, undefined) when is_integer(N), is_integer(Score)->
     undefined;
 process_query({'Z_TOP', N, 'FROMSCORE', Score}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(Score) ->
-    #woody_zset_result{content=zset:top(N, Score, ZSet), scores=false};
+    #woody_zset_result{content=zset:top(Score, N, ZSet), scores=false};
 process_query({'Z_TOP', N, 'FROMSCORE', Score, 'WITHSCORES'}, #woody_zset{content=ZSet}) when is_integer(N), is_integer(Score)->
-    #woody_zset_result{content=zset:top(N, Score, ZSet), scores=true};
+    #woody_zset_result{content=zset:top(Score, N, ZSet), scores=true};
 
 process_query({'Z_RANGE', N, M}, undefined) when is_integer(N), is_integer(M) ->
     undefined;
