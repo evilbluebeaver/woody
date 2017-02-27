@@ -149,10 +149,10 @@ test_sets(_Config) ->
 
 test_zsets(_Config) ->
     Tree = woody:new(),
-    Update1 = #{1 => {'Z_SETSCORE', 10, {'SET', <<"1">>}}},
+    Update1 = #{1 => {'Z_SETSCORE', -10, {'SET', <<"1">>}}},
     {ok, Tree1} = woody:update(Update1, Tree),
     {ok, Tree1} = woody:update(Update1, Tree1),
-    Update2 = #{1 => {'Z_SETSCORE', 10}},
+    Update2 = #{1 => {'Z_SETSCORE', -10}},
     {ok, Tree1} = woody:update(Update2, Tree1),
 
     Query1 = #{1 => 'GET', 2 => 'GET'},
@@ -161,18 +161,18 @@ test_zsets(_Config) ->
     ExpectedData1 = woody:encode(RawData1),
 
     Query2 = {'Z_TOP', 5, 'WITHSCORES'},
-    ExpectedData2 = #{1 => {<<"1">>, 'WITHSCORE', 10}},
+    ExpectedData2 = #{1 => {<<"1">>, 'WITHSCORE', -10}},
     {ok, RawData2} = woody:query(Query2, Tree1),
     ExpectedData2 = woody:encode(RawData2),
     {ok, RawUndefined} = woody:query(Query2, Tree),
     undefined = woody:encode(RawUndefined),
 
-    Query3 = {'Z_TOP', 5, 'FROMSCORE', 10, 'WITHSCORES'},
+    Query3 = {'Z_TOP', 5, 'FROMSCORE', -10, 'WITHSCORES'},
     {ok, RawData3} = woody:query(Query3, Tree1),
     ExpectedData2 = woody:encode(RawData3),
     {ok, RawUndefined} = woody:query(Query3, Tree),
 
-    Query4 = {'Z_RANGE', 5, 10, 'WITHSCORES'},
+    Query4 = {'Z_RANGE', -10, -5, 'WITHSCORES'},
     {ok, RawData4} = woody:query(Query4, Tree1),
     ExpectedData2 = woody:encode(RawData4),
     {ok, RawUndefined} = woody:query(Query4, Tree),
@@ -186,7 +186,7 @@ test_zsets(_Config) ->
     {ok, RawData6} = woody:query(Query6, Tree1),
     ExpectedData1 = woody:encode(RawData6),
 
-    Update7 = #{1 => {'Z_SETSCORE', 10, 'UNSET'}},
+    Update7 = #{1 => {'Z_SETSCORE', -10, 'UNSET'}},
     {ok, Tree} = woody:update(Update7, Tree),
 
     Query8 = {'Z_TOP', 5},
@@ -194,12 +194,12 @@ test_zsets(_Config) ->
     ExpectedData1 = woody:encode(RawData8),
     {ok, RawUndefined} = woody:query(Query8, Tree),
 
-    Query9 = {'Z_TOP', 5, 'FROMSCORE', 10},
+    Query9 = {'Z_TOP', 5, 'FROMSCORE', -10},
     {ok, RawData9} = woody:query(Query9, Tree1),
     ExpectedData1 = woody:encode(RawData9),
     {ok, RawUndefined} = woody:query(Query9, Tree),
 
-    Query10 = {'Z_RANGE', 5, 10},
+    Query10 = {'Z_RANGE', -10, -5},
     {ok, RawData10} = woody:query(Query10, Tree1),
     ExpectedData1 = woody:encode(RawData10),
     {ok, RawUndefined} = woody:query(Query10, Tree),
