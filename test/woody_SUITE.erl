@@ -374,6 +374,21 @@ test_trie(_Config) ->
     {ok, RawData12} = woody:query(Query12, Tree8),
     undefined = woody:encode(RawData12),
 
+    Query13 = {'T_SUFFIXES', <<"prefix">>},
+    Expected9 = #{<<"prefix">> => #{1 => <<"11">>,
+                                    2 => <<"21">>},
+                  <<"prefix2">> => #{1 => <<"12">>,
+                                     2 => <<"22">>}},
+    {ok, RawData9} = woody:query(Query13, Tree8),
+    Expected9 = woody:encode(RawData9),
+
+    Query14 = {'T_SUFFIXES', <<"prefix">>},
+    {ok, RawData14} = woody:query(Query14, Tree),
+    undefined = woody:encode(RawData14),
+
+    Query15 = {'T_SUFFIXES', <<"prefix1">>},
+    {ok, RawData15} = woody:query(Query15, Tree8),
+    undefined = woody:encode(RawData15),
     ok.
 
 test_complex(_Config) ->

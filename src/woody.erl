@@ -10,9 +10,9 @@
 -record(woody_result,       {content}).
 -record(woody_set,          {content}).
 -record(woody_zset,         {content}).
--record(woody_trie,         {content}).
+-record(woody_btrie,        {content}).
 -record(woody_zset_result,  {content, scores}).
--record(woody_trie_result,  {content}).
+-record(woody_btrie_result, {content}).
 
 encode(#woody_result{content=Content}) ->
     encode_value(Content).
@@ -47,7 +47,7 @@ encode_value({dict, Dict}) ->
                   maps:put(K, encode_value(V), Acc)
           end,
     dict:fold(Fun, #{}, Dict);
-encode_value(#woody_trie_result{content=TrieResult}) ->
+encode_value(#woody_btrie_result{content=TrieResult}) ->
     Fun = fun(_, V) -> encode_value(V) end,
     maps:map(Fun, TrieResult);
 encode_value(#woody_set{content=Set}) ->
@@ -68,11 +68,11 @@ encode_value(#woody_zset_result{content=ZSetResult, scores=Scores}) ->
           end,
     maps:from_list(lists:map(Fun, ZSetResult));
 
-encode_value(#woody_trie{content=Trie}) ->
+encode_value(#woody_btrie{content=Trie}) ->
     Fun = fun(P, V, A) ->
-                  maps:put(list_to_binary(P), encode_value(V), A)
+                  maps:put(P, encode_value(V), A)
           end,
-    trie:fold(Fun, #{}, Trie);
+    btrie:fold(Fun, #{}, Trie);
 
 encode_value(V) ->
     V.
@@ -90,8 +90,8 @@ try_process_query(Key, Query, Value, Result) ->
 process_query_key(Key, Query, undefined, Result) ->
     try_process_query(Key, Query, undefined, Result);
 
-process_query_key(Key, Query, #woody_trie{content=Content}, Result) when is_binary(Key) ->
-    Value = case trie:find(binary_to_list(Key), Content) of
+process_query_key(Key, Query, #woody_btrie{content=Content}, Result) when is_binary(Key) ->
+    Value = case btrie:find(Key, Content) of
                 error ->
                     undefined;
                 {ok, V} ->
@@ -144,16 +144,30 @@ process_query('GET', Value) ->
 
 process_query({'T_SIMILAR', _Prefix}, undefined) ->
     undefined;
-process_query({'T_SIMILAR', Prefix}, #woody_trie{content=Trie}) when is_binary(Prefix) ->
+process_query({'T_SIMILAR', Prefix}, #woody_btrie{content=Trie}) when is_binary(Prefix) ->
     Fun = fun(K, V, Acc) ->
-                  maps:put(list_to_binary(K), V, Acc)
+                  maps:put(K, V, Acc)
           end,
-    Result = trie:fold_similar(binary_to_list(Prefix), Fun, #{}, Trie),
+    Result = btrie:fold_similar(Prefix, Fun, #{}, Trie),
     case maps:size(Result) of
         0 ->
             undefined;
         _ ->
-            #woody_trie_result{content=Result}
+            #woody_btrie_result{content=Result}
+    end;
+
+process_query({'T_SUFFIXES', _Prefix}, undefined) ->
+    undefined;
+process_query({'T_SUFFIXES', Prefix}, #woody_btrie{content=Trie}) when is_binary(Prefix) ->
+    Fun = fun(K, V, Acc) ->
+                  maps:put(K, V, Acc)
+          end,
+    Result = btrie:fold_suffixes(Prefix, Fun, #{}, Trie),
+    case maps:size(Result) of
+        0 ->
+            undefined;
+        _ ->
+            #woody_btrie_result{content=Result}
     end;
 
 process_query({'S_INTERSECTION', L}, undefined) when is_list(L) ->
@@ -206,10 +220,9 @@ process_query(_, _) ->
     {error, unknown_query}.
 
 process_update_key(Prefix, Update={'T_PREFIX', _}, undefined) when is_binary(Prefix) ->
-    process_update_key(Prefix, Update, #woody_trie{content=trie:new()});
-process_update_key(Prefix, {'T_PREFIX', Update}, #woody_trie{content=Trie}) when is_binary(Prefix) ->
-    StringPrefix = binary_to_list(Prefix),
-    OldValue = case trie:find(StringPrefix, Trie) of
+    process_update_key(Prefix, Update, #woody_btrie{content=btrie:new()});
+process_update_key(Prefix, {'T_PREFIX', Update}, #woody_btrie{content=Trie}) when is_binary(Prefix) ->
+    OldValue = case btrie:find(Prefix, Trie) of
                    error ->
                        undefined;
                    {ok, OV} ->
@@ -219,15 +232,15 @@ process_update_key(Prefix, {'T_PREFIX', Update}, #woody_trie{content=Trie}) when
         {error, _}=Error ->
             Error;
         undefined ->
-            Trie1 = trie:erase(StringPrefix, Trie),
-            case trie:size(Trie1) of
+            Trie1 = btrie:erase(Prefix, Trie),
+            case btrie:size(Trie1) of
                 0 ->
                     undefined;
                 _ ->
-                    #woody_trie{content=Trie1}
+                    #woody_btrie{content=Trie1}
             end;
         V ->
-            #woody_trie{content=trie:store(StringPrefix, V, Trie)}
+            #woody_btrie{content=btrie:store(Prefix, V, Trie)}
     end;
 
 process_update_key(Key, {'Z_SETSCORE', Score}, Value) when is_integer(Score) ->
